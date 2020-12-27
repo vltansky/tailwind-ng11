@@ -2,17 +2,24 @@ module.exports = (config) => {
   const isProd = config.mode === "production";
   const tailwindConfig = require("./tailwind.config.js")(isProd);
 
-  const globalStylesPostcssLoaderOptions = config.module.rules
-  .find((r) => r.include && r.test && r.test.toString().includes('\\.scss$'))
-  .use.find((u) => u.loader && u.loader.includes('postcss-loader')).options;
-
-  const globalStylesPostcssOptionsCreator = globalStylesPostcssLoaderOptions.postcssOptions;
-
-  globalStylesPostcssLoaderOptions.postcssOptions = (loader) => {
-    const postcssOptions = globalStylesPostcssOptionsCreator(loader);
-    postcssOptions.plugins.splice(postcssOptions.plugins.length - 1, 0, require('tailwindcss')(tailwindConfig));
-
-    return postcssOptions;
-  };
-return config;
+  config.module.rules.map(rule=>{
+    if(rule.use && rule.use.length > 0){
+      rule.use.map(useLoader => {
+        if(useLoader.options && useLoader.options.postcssOptions){
+          const postcssOptions = useLoader.options.postcssOptions;
+          useLoader.options.postcssOptions = (loader) => {
+            const _postcssOptions = postcssOptions(loader);
+            const autoprefixerIndex = _postcssOptions.plugins.findIndex(v=>v.postcssPlugin === 'autoprefixer');
+            if(autoprefixerIndex){
+              _postcssOptions.plugins.splice(autoprefixerIndex, 0, require('tailwindcss')(tailwindConfig));
+            }
+            return _postcssOptions;
+          }
+        }
+        return useLoader;
+      })
+    }
+    return rule;
+  });
+  return config;
 };
