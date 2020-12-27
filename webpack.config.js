@@ -3,7 +3,7 @@ module.exports = (config) => {
   const tailwindConfig = require("./tailwind.config.js")(isProd);
 
   const globalStylesPostcssLoaderOptions = config.module.rules
-  .find((r) => r.include && r.test && r.test.toString().includes('\\.scss$'))
+  .find((r) => r.include && r.test && r.test.toString().includes('\\.less$'))
   .use.find((u) => u.loader && u.loader.includes('postcss-loader')).options;
 
   const globalStylesPostcssOptionsCreator = globalStylesPostcssLoaderOptions.postcssOptions;
