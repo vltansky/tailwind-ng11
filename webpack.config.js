@@ -1,25 +1,58 @@
+function patchWebpackPostcssPlugins({
+  webpackConfig,
+  addPlugins = [],
+  pluginName = null,
+  append = false,
+  atIndex = null,
+  components = true,
+  global = true,
+}) {
+  const position = append ? 1 : 0;
+  webpackConfig.module.rules.map((rule) => {
+    if (!(rule.use && rule.use.length > 0) || (!components && rule.exclude) || (!global && rule.include)) {
+      return rule;
+    }
+    rule.use.map((useLoader) => {
+      if (!(useLoader.options && useLoader.options.postcssOptions)) {
+        return useLoader;
+      }
+      const postcssOptions = useLoader.options.postcssOptions;
+      useLoader.options.postcssOptions = (loader) => {
+        const _postcssOptions = postcssOptions(loader);
+        const pluginIndex =
+          atIndex !== null
+            ? atIndex
+            : _postcssOptions.plugins.findIndex(
+                ({ postcssPlugin }) =>
+                  postcssPlugin && pluginName && postcssPlugin.toLowerCase() === pluginName.toLowerCase()
+              );
+        if (pluginName && pluginIndex === -1) {
+          console.warn(`${pluginName} not found in postcss plugins`);
+        }
+        const insertIndex =
+          pluginIndex >= 0
+            ? Math.min(Math.max(pluginIndex, 0), _postcssOptions.plugins.length)
+            : _postcssOptions.plugins.length;
+        _postcssOptions.plugins.splice(insertIndex + position, 0, ...addPlugins);
+        return _postcssOptions;
+      };
+      return useLoader;
+    });
+    return rule;
+  });
+}
+
 module.exports = (config) => {
   const isProd = config.mode === "production";
   const tailwindConfig = require("./tailwind.config.js")(isProd);
-
-  config.module.rules.map(rule=>{
-    if(rule.use && rule.use.length > 0){
-      rule.use.map(useLoader => {
-        if(useLoader.options && useLoader.options.postcssOptions){
-          const postcssOptions = useLoader.options.postcssOptions;
-          useLoader.options.postcssOptions = (loader) => {
-            const _postcssOptions = postcssOptions(loader);
-            const autoprefixerIndex = _postcssOptions.plugins.findIndex(v=>v.postcssPlugin === 'autoprefixer');
-            if(autoprefixerIndex){
-              _postcssOptions.plugins.splice(autoprefixerIndex, 0, require('tailwindcss')(tailwindConfig));
-            }
-            return _postcssOptions;
-          }
-        }
-        return useLoader;
-      })
-    }
-    return rule;
+  patchWebpackPostcssPlugins({
+    webpackConfig: config,
+    addPlugins: [require("tailwindcss")(tailwindConfig)],
+    pluginName: "autoprefixer",
+    // global: false,
+    // components: false,
+    // atIndex: 2,
+    // append: false,
   });
   return config;
 };
