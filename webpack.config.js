@@ -11,7 +11,6 @@ function patchPostCSS(webpackConfig, tailwindConfig, components = true) {
       const originPostcssOptions = useLoader.options.postcssOptions;
       useLoader.options.postcssOptions = (loader) => {
         const _postcssOptions = originPostcssOptions(loader);
-        console.log(_postcssOptions.plugins);process.exit(0);
         const insertIndex = _postcssOptions.plugins.findIndex(
           ({ postcssPlugin }) => postcssPlugin && postcssPlugin.toLowerCase() === pluginName
         );
