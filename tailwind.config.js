@@ -9,7 +9,11 @@ module.exports = (isProd) => ({
     },
     darkMode: false, // or 'media' or 'class'
     theme: {
-      extend: {},
+      extend: {
+        colors: {
+          primary: "#6332f6",
+        },
+      },
     },
     variants: {
       extend: {},
