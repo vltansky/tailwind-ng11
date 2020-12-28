@@ -1,4 +1,17 @@
 
+
+@layer utilities {
+  .scroll-snap-none {
+    scroll-snap-type: none;
+  }
+  .scroll-snap-x {
+    scroll-snap-type: x;
+  }
+  .scroll-snap-y {
+    scroll-snap-type: y;
+  }
+}
+
 .test{
   @apply border-l-4 px-5 py-4 my-3 border-red-500 bg-red-100 text-primary;
 }
