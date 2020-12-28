@@ -8,17 +8,17 @@ function patchWebpackPostcssPlugins({
   global = true,
 }) {
   const position = append ? 1 : 0;
-  webpackConfig.module.rules.map((rule) => {
+  for(const rule of webpackConfig.module.rules){
     if (!(rule.use && rule.use.length > 0) || (!components && rule.exclude) || (!global && rule.include)) {
-      return rule;
+      continue;
     }
-    rule.use.map((useLoader) => {
+    for(const useLoader of rule.use){
       if (!(useLoader.options && useLoader.options.postcssOptions)) {
-        return useLoader;
+        continue;
       }
-      const postcssOptions = useLoader.options.postcssOptions;
+      const originPostcssOptions = useLoader.options.postcssOptions;
       useLoader.options.postcssOptions = (loader) => {
-        const _postcssOptions = postcssOptions(loader);
+        const _postcssOptions = originPostcssOptions(loader);
         const pluginIndex =
           atIndex !== null
             ? atIndex
@@ -36,10 +36,8 @@ function patchWebpackPostcssPlugins({
         _postcssOptions.plugins.splice(insertIndex + position, 0, ...addPlugins);
         return _postcssOptions;
       };
-      return useLoader;
-    });
-    return rule;
-  });
+    }
+  }
 }
 
 module.exports = (config) => {
