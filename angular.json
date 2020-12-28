@@ -28,6 +28,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/tailwindcss/tailwind.css",
               "src/styles.less",
               "src/styles2.scss"
             ],
